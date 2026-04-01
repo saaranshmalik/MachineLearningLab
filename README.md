@@ -166,9 +166,9 @@ python live_terminal_graphs.py
 
 Generated images are saved under `outputs/matplotlib_graphs/`.
 
-## Original LSTM Work
+##LSTM Work
 
-This repository also contains the original LSTM-oriented implementation:
+This repository also contains the LSTM-oriented implementation:
 
 - `stock_pred_main.py`
 - `stock_pred_hyperopt.py`
@@ -215,6 +215,3 @@ Possible deployment formats:
 
 Machine learning stock price prediction project using GE historical data, 60-day sliding windows, Gradient Boosting, and visualization-based performance reporting.
 
-## License
-
-This project is provided for educational purposes under the Apache 2.0 license included in this repository.
