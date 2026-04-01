@@ -12,7 +12,7 @@ This project is an end-to-end stock price prediction system built for machine le
 - evaluating predictions with regression metrics
 - generating terminal and matplotlib-based visualizations
 
-The current runnable implementation uses `scikit-learn`'s `GradientBoostingRegressor` for simplicity, speed, and Python 3.14 compatibility. The repository also keeps the original LSTM-based experimental scripts for reference.
+The current runnable implementation uses `scikit-learn`'s `GradientBoostingRegressor` for simplicity, speed, and Python 3.14 compatibility.
 
 ## Project Highlights
 
