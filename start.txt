@@ -1,0 +1,8 @@
+# Step 1: Navigate to folder
+cd "d:\ML\ML LAB\Stock-Price-Prediction-master"
+
+# Step 2: Show accuracy on terminal
+python show_accuracy.py
+
+# Step 3: Open graphs folder
+explorer "outputs\lstm_best_7-3-19_12AM\dropout_layers_0.4_0.4"
