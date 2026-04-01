@@ -2,6 +2,12 @@
 __pycache__/
 .matplotlib/
 outputs/
+!outputs/
+outputs/*
+!outputs/matplotlib_graphs/
+outputs/matplotlib_graphs/*
+!outputs/matplotlib_graphs/actual_vs_predicted.png
+!outputs/matplotlib_graphs/model_dashboard.png
 *.pyc
 *.pyo
 *.pyd
