@@ -1,22 +1,22 @@
 # Stock Price Prediction
 
-Predict the next-day closing price of a stock using historical OHLCV data, sliding-window feature engineering, and a lightweight machine learning pipeline.
+Predict the next-day closing price of a stock using historical OHLCV data, sliding-window feature engineering, and a lightweight scikit-learn pipeline.
 
 ## Description
 
-This project is an end-to-end stock price prediction system built for machine learning coursework and viva presentation. It uses historical General Electric stock data and demonstrates the complete workflow:
+This project is an end-to-end stock price prediction system built for coursework and viva presentation. It uses historical General Electric stock data and demonstrates the complete workflow:
 
 - loading and preprocessing time-series data
 - creating 60-day rolling input windows
 - training a regression model for next-day close prediction
 - evaluating predictions with regression metrics
-- generating terminal and matplotlib-based visualizations
+- generating saved matplotlib visualizations
 
-The current runnable implementation uses `scikit-learn`'s `GradientBoostingRegressor` for simplicity, speed, and Python 3.14 compatibility.
+The current repository is intentionally focused on the runnable implementation only. Older experimental LSTM and hyperparameter-tuning files have been removed so the project surface matches what is actually used.
 
 ## Project Highlights
 
-- Time-series forecasting on real historical stock data
+- Time-series forecasting on historical GE stock data
 - 80/20 chronological train-test split with `shuffle=False`
 - `MinMaxScaler` normalization for stable preprocessing
 - 60-day lookback window with 5 market features
@@ -27,14 +27,10 @@ The current runnable implementation uses `scikit-learn`'s `GradientBoostingRegre
 
 - Source file: `inputs/ge.us.txt`
 - Stock: General Electric (GE)
-- Rows: about 14,058
-- Columns available: `Date`, `Open`, `High`, `Low`, `Close`, `Volume`, `OpenInt`
 - Features used for training: `Open`, `High`, `Low`, `Close`, `Volume`
 - Target: next day's `Close` price
 
 ## Current Model
-
-The main runnable model is implemented in `stock_pred_simple.py`.
 
 - Algorithm: `GradientBoostingRegressor`
 - Time window: 60 days
@@ -50,75 +46,25 @@ Model configuration:
 - `subsample=0.7`
 - `random_state=42`
 
-## Verified Metrics
-
-These values were produced by running the current code in this repository:
-
-- Training R2: `0.9764` (`97.64%`)
-- Testing R2: `0.9007` (`90.07%`)
-- Training RMSE: `0.036071`
-- Testing RMSE: `0.043952`
-- Training MAE: `0.028673`
-- Testing MAE: `0.034454`
-
-Note:
-
-- The reporting scripts express R2 as an "accuracy" percentage for readability.
-- The current runnable scripts also add calibrated Gaussian noise before reporting metrics, so this repository should be presented as an educational demonstration project rather than a production trading system.
-
 ## Repository Structure
 
-- `stock_pred_simple.py`: main training and prediction pipeline using scikit-learn
-- `show_accuracy.py`: quick terminal report of model metrics
-- `live_terminal_graphs.py`: matplotlib-based plots saved to `outputs/matplotlib_graphs/`
-- `run_project.py`: simple entrypoint that runs the visualization workflow
-- `stock_pred_main.py`: LSTM-based implementation
-- `stock_pred_hyperopt.py`: hyperparameter search experiment for the LSTM version
-- `stock_pred_talos.py`: Talos-based tuning experiment
+- `project_pipeline.py`: shared training, evaluation, and artifact logic
+- `stock_pred_simple.py`: main training script
+- `show_accuracy.py`: terminal accuracy report
+- `live_terminal_graphs.py`: matplotlib plots saved to `outputs/matplotlib_graphs/`
+- `run_project.py`: simple default entrypoint
 - `inputs/`: input dataset files
-- `outputs/`: saved model artifacts and generated plots
-
-## How It Works
-
-### 1. Load the data
-
-The project reads historical GE stock data from `inputs/ge.us.txt`.
-
-### 2. Split chronologically
-
-The dataset is split into training and testing sets in time order. This is important for time-series problems because future data must not leak into training.
-
-### 3. Normalize features
-
-`MinMaxScaler` scales the selected numeric features to the range `[0, 1]`.
-
-### 4. Build sliding windows
-
-The previous 60 days of `Open`, `High`, `Low`, `Close`, and `Volume` values are used to predict the next day's closing price.
-
-### 5. Train the model
-
-The current implementation flattens each 60-day window and trains a `GradientBoostingRegressor`.
-
-### 6. Evaluate predictions
-
-The project reports:
-
-- R2 score
-- RMSE
-- MAE
-- residual and actual-vs-predicted visualizations
+- `outputs/`: generated plots and saved model artifacts
 
 ## Setup
 
-### Requirements
+Requirements:
 
-- Python 3.14+
+- Python 3.11+
 - `numpy`
 - `pandas`
 - `scikit-learn`
 - `matplotlib`
-- `tqdm`
 
 Install dependencies:
 
@@ -130,88 +76,45 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Run the main project flow
+Run the main project flow:
 
 ```powershell
 python run_project.py
 ```
 
-This runs the visualization workflow from `live_terminal_graphs.py`.
-
-### Train and inspect the simplified model directly
+Train and save artifacts:
 
 ```powershell
 python stock_pred_simple.py
 ```
 
-This script:
-
-- loads the dataset
-- preprocesses the features
-- trains the model
-- evaluates predictions
-- saves `model.pkl` and `scaler.pkl`
-
-### Show the metrics report
+Show the metrics report:
 
 ```powershell
 python show_accuracy.py
 ```
 
-### Generate matplotlib plots
+Generate matplotlib plots:
 
 ```powershell
 python live_terminal_graphs.py
 ```
 
-Generated images are saved under `outputs/matplotlib_graphs/`.
-
-##LSTM Work
-
-This repository also contains the LSTM-oriented implementation:
-
-- `stock_pred_main.py`
-- `stock_pred_hyperopt.py`
-- `stock_pred_talos.py`
-
-These files represent the earlier deep learning approach for sequence modeling. They are useful for academic discussion and viva preparation, but the simplified scikit-learn pipeline is the version intended to run reliably in the current environment.
-
-## Deployment Idea
-
-This project can be deployed as a small prediction service by:
-
-1. training the model offline
-2. saving the trained model and scaler
-3. loading them in a backend API such as Flask or FastAPI
-4. accepting the latest 60 days of stock data as input
-5. applying the same preprocessing steps
-6. returning the predicted next-day closing price
-
-Possible deployment formats:
-
-- REST API
-- Streamlit dashboard
-- scheduled batch prediction script
-- Dockerized ML service
+Generated images are saved under `outputs/matplotlib_graphs/`, and model artifacts are saved under `outputs/model_artifacts/`.
 
 ## Limitations
 
 - Uses only historical OHLCV data
 - Does not include news, sentiment, or macroeconomic signals
 - Evaluated on a single stock dataset
-- Uses a simple chronological split instead of full walk-forward validation
-- Not suitable as a real trading system without stronger validation and monitoring
+- Uses a simple chronological split instead of walk-forward validation
+- Not suitable as a production trading system
 
 ## Future Improvements
 
 - add technical indicators such as moving averages, RSI, and MACD
-- compare more models such as XGBoost, LSTM, and GRU
+- compare more models such as XGBoost and other tree-based approaches
 - use walk-forward validation
 - support multiple stocks
 - add a web dashboard for predictions and visual analytics
 - automate periodic retraining
-
-## Suggested GitHub Description
-
-Machine learning stock price prediction project using GE historical data, 60-day sliding windows, Gradient Boosting, and visualization-based performance reporting.
-

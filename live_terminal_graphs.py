@@ -1,5 +1,5 @@
 """
-Matplotlib-based visualizations for the stock price prediction project.
+Generate matplotlib-based visualizations for the stock price prediction project.
 """
 
 import os
@@ -16,89 +16,12 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
+
+from project_pipeline import train_model
 
 warnings.filterwarnings("ignore")
 
-INPUT_PATH = os.path.join(PROJECT_ROOT, "inputs")
 OUTPUT_PATH = os.path.join(PROJECT_ROOT, "outputs", "matplotlib_graphs")
-TIME_STEPS = 60
-
-
-def create_features(data, time_steps):
-    X, y = [], []
-    for i in range(len(data) - time_steps):
-        X.append(data[i:i + time_steps, :])
-        y.append(data[i + time_steps, 3])
-    return np.array(X), np.array(y)
-
-
-def train_and_predict():
-    df_ge = pd.read_csv(os.path.join(INPUT_PATH, "ge.us.txt"), engine="python")
-    train_cols = ["Open", "High", "Low", "Close", "Volume"]
-    df_train, df_test = train_test_split(df_ge, train_size=0.8, test_size=0.2, shuffle=False)
-
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    scaled_train = scaler.fit_transform(df_train[train_cols])
-    scaled_test = scaler.transform(df_test[train_cols])
-
-    X_train, y_train = create_features(scaled_train, TIME_STEPS)
-    X_test, y_test = create_features(scaled_test, TIME_STEPS)
-    X_train_reshaped = X_train.reshape(X_train.shape[0], -1)
-    X_test_reshaped = X_test.reshape(X_test.shape[0], -1)
-
-    model = GradientBoostingRegressor(
-        n_estimators=20,
-        learning_rate=0.3,
-        max_depth=2,
-        subsample=0.7,
-        alpha=0.5,
-        random_state=42,
-    )
-    model.fit(X_train_reshaped, y_train)
-
-    y_pred_train = model.predict(X_train_reshaped)
-    y_pred_test = model.predict(X_test_reshaped)
-
-    np.random.seed(42)
-    y_pred_train = y_pred_train + np.random.normal(0, 0.035, y_pred_train.shape)
-    y_pred_test = y_pred_test + np.random.normal(0, 0.035, y_pred_test.shape)
-
-    dummy_train = np.zeros((len(y_pred_train), 5))
-    dummy_test = np.zeros((len(y_pred_test), 5))
-    dummy_train[:, 3] = y_pred_train
-    dummy_test[:, 3] = y_pred_test
-
-    dummy_actual_train = np.zeros((len(y_train), 5))
-    dummy_actual_test = np.zeros((len(y_test), 5))
-    dummy_actual_train[:, 3] = y_train
-    dummy_actual_test[:, 3] = y_test
-
-    y_train_original = scaler.inverse_transform(dummy_actual_train)[:, 3]
-    y_test_original = scaler.inverse_transform(dummy_actual_test)[:, 3]
-    y_pred_train_original = scaler.inverse_transform(dummy_train)[:, 3]
-    y_pred_test_original = scaler.inverse_transform(dummy_test)[:, 3]
-
-    metrics = {
-        "train_r2": r2_score(y_train, y_pred_train),
-        "test_r2": r2_score(y_test, y_pred_test),
-        "train_rmse": np.sqrt(mean_squared_error(y_train, y_pred_train)),
-        "test_rmse": np.sqrt(mean_squared_error(y_test, y_pred_test)),
-        "train_mae": mean_absolute_error(y_train, y_pred_train),
-        "test_mae": mean_absolute_error(y_test, y_pred_test),
-    }
-
-    return {
-        "metrics": metrics,
-        "y_train_original": y_train_original,
-        "y_test_original": y_test_original,
-        "y_pred_train_original": y_pred_train_original,
-        "y_pred_test_original": y_pred_test_original,
-    }
 
 
 def save_plots(results):
@@ -204,7 +127,7 @@ def main():
     print("=" * 100 + "\n")
     print("Loading data and training model...")
 
-    results = train_and_predict()
+    results = train_model()
     dashboard_path, prediction_path = save_plots(results)
 
     metrics = results["metrics"]
