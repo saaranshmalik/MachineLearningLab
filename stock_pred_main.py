@@ -1,19 +1,4 @@
-#
-# Copyright (c) 2019. Asutosh Nayak (nayak.asutosh@ymail.com)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
 
-"""
-Final program to predict stock price. This was run on Google Colab notebook so you would find
-some undefined functions like 'display' and parameters like 'PATH_TO_DRIVE_ML_DATA' which was path to my drive folder which
-housed project related data. Please initialize that variable with suitable value as per your
-environment.
-"""
 
 import numpy as np
 import os
