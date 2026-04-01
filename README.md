@@ -72,7 +72,7 @@ Note:
 - `show_accuracy.py`: quick terminal report of model metrics
 - `live_terminal_graphs.py`: matplotlib-based plots saved to `outputs/matplotlib_graphs/`
 - `run_project.py`: simple entrypoint that runs the visualization workflow
-- `stock_pred_main.py`: original LSTM-based implementation
+- `stock_pred_main.py`: LSTM-based implementation
 - `stock_pred_hyperopt.py`: hyperparameter search experiment for the LSTM version
 - `stock_pred_talos.py`: Talos-based tuning experiment
 - `inputs/`: input dataset files
