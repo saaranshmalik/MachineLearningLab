@@ -12,7 +12,6 @@ This project is an end-to-end stock price prediction system built for coursework
 - evaluating predictions with regression metrics
 - generating saved matplotlib visualizations
 
-The current repository is intentionally focused on the runnable implementation only. Older experimental LSTM and hyperparameter-tuning files have been removed so the project surface matches what is actually used.
 
 ## Project Highlights
 
