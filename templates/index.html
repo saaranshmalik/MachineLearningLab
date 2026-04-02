@@ -37,11 +37,21 @@
             <div class="hero-panel">
                 <h2>Quick prediction</h2>
                 <form method="post" class="predict-form">
-                    <label for="history_rows">
-                        Paste {{ time_steps }} lines in this format:
-                        <code>Open,High,Low,Close,Volume</code>
+                    <label for="prediction_date">
+                        Choose a trading date and the app will use the previous {{ time_steps }}
+                        rows ending on that date to estimate the next close.
                     </label>
-                    <textarea id="history_rows" name="history_rows" spellcheck="false">{{ form_text }}</textarea>
+                    <input
+                        id="prediction_date"
+                        name="prediction_date"
+                        type="date"
+                        value="{{ selected_prediction_date }}"
+                        min="{{ min_prediction_date }}"
+                        max="{{ max_prediction_date }}"
+                    >
+                    <p class="input-hint">
+                        Valid range: {{ min_prediction_date }} to {{ max_prediction_date }}
+                    </p>
                     <button type="submit">Predict Next Close</button>
                 </form>
                 {% if error_message %}
@@ -49,6 +59,8 @@
                 {% endif %}
                 {% if prediction_result %}
                 <div class="message success">
+                    <p>Selected date: <strong>{{ prediction_result.selected_date }}</strong></p>
+                    <p>Lookback window: <strong>{{ prediction_result.window_start_date }}</strong> to <strong>{{ prediction_result.window_end_date }}</strong></p>
                     <p>Predicted next close: <strong>${{ '%.2f'|format(prediction_result.predicted_close) }}</strong></p>
                     <p>
                         Signal:
@@ -57,6 +69,13 @@
                         </strong>
                         ({{ '%+.2f'|format(prediction_result.delta) }} vs latest close)
                     </p>
+                    {% if prediction_result.next_actual_close is not none %}
+                    <p>
+                        Actual next close on <strong>{{ prediction_result.next_actual_date }}</strong>:
+                        <strong>${{ '%.2f'|format(prediction_result.next_actual_close) }}</strong>
+                        (error {{ '%+.2f'|format(prediction_result.actual_error) }})
+                    </p>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
@@ -98,6 +117,41 @@
 
             <article class="panel">
                 <div class="panel-heading">
+                    <h2>Prediction window preview</h2>
+                    <p>Latest {{ prediction_window_preview|length }} rows from the selected lookback window.</p>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Open</th>
+                                <th>High</th>
+                                <th>Low</th>
+                                <th>Close</th>
+                                <th>Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in prediction_window_preview %}
+                            <tr>
+                                <td>{{ row.Date }}</td>
+                                <td>{{ row.Open }}</td>
+                                <td>{{ row.High }}</td>
+                                <td>{{ row.Low }}</td>
+                                <td>{{ row.Close }}</td>
+                                <td>{{ row.Volume }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+
+        <section class="content-grid">
+            <article class="panel">
+                <div class="panel-heading">
                     <h2>Recent trading rows</h2>
                     <p>Latest {{ recent_rows|length }} rows from the built-in dataset.</p>
                 </div>
@@ -126,6 +180,29 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+            </article>
+            <article class="panel">
+                <div class="panel-heading">
+                    <h2>Date-driven prediction</h2>
+                    <p>
+                        Pick a date that exists in the dataset and the model will automatically
+                        assemble the {{ time_steps }}-row feature window.
+                    </p>
+                </div>
+                <div class="metric-grid">
+                    <div class="metric">
+                        <span>Earliest prediction date</span>
+                        <strong>{{ min_prediction_date }}</strong>
+                    </div>
+                    <div class="metric">
+                        <span>Latest prediction date</span>
+                        <strong>{{ max_prediction_date }}</strong>
+                    </div>
+                    <div class="metric">
+                        <span>Lookback rows</span>
+                        <strong>{{ time_steps }}</strong>
+                    </div>
                 </div>
             </article>
         </section>

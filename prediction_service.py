@@ -42,14 +42,60 @@ def load_stock_dataframe():
     return df
 
 
+def get_prediction_window(df, selected_date):
+    selected_timestamp = pd.Timestamp(selected_date)
+    matched_rows = df.index[df["Date"] == selected_timestamp]
+    if len(matched_rows) == 0:
+        raise ValueError("Selected date was not found in the dataset.")
+
+    selected_index = int(matched_rows[0])
+    minimum_index = TIME_STEPS - 1
+    if selected_index < minimum_index:
+        earliest_date = df.iloc[minimum_index]["Date"].strftime("%Y-%m-%d")
+        raise ValueError(
+            f"Please choose a date on or after {earliest_date} so the model has {TIME_STEPS} prior rows."
+        )
+
+    window = df.iloc[selected_index - TIME_STEPS + 1:selected_index + 1].copy()
+    next_row = df.iloc[selected_index + 1].copy() if selected_index + 1 < len(df) else None
+    return window, selected_index, next_row
+
+
+def predict_next_close_from_date(selected_date):
+    df = load_stock_dataframe()
+    window, selected_index, next_row = get_prediction_window(df, selected_date)
+    predicted_close = predict_next_close(window[TRAIN_COLUMNS].to_dict(orient="records"))
+    latest_close = float(window["Close"].iloc[-1])
+
+    result = {
+        "selected_date": window["Date"].iloc[-1].strftime("%Y-%m-%d"),
+        "latest_close": latest_close,
+        "predicted_close": predicted_close,
+        "delta": predicted_close - latest_close,
+        "direction": "Bullish" if predicted_close >= latest_close else "Bearish",
+        "window_start_date": window["Date"].iloc[0].strftime("%Y-%m-%d"),
+        "window_end_date": window["Date"].iloc[-1].strftime("%Y-%m-%d"),
+        "lookback_rows": TIME_STEPS,
+        "next_actual_date": None,
+        "next_actual_close": None,
+    }
+
+    if next_row is not None:
+        result["next_actual_date"] = next_row["Date"].strftime("%Y-%m-%d")
+        result["next_actual_close"] = float(next_row["Close"])
+        result["actual_error"] = predicted_close - result["next_actual_close"]
+
+    return result, window, selected_index
+
+
 def build_dashboard_context():
     results = train_model()
     dashboard_path, prediction_path = save_plots(results)
     df = load_stock_dataframe()
     recent_rows = df.tail(TIME_STEPS).copy()
-    prediction = predict_next_close(recent_rows[TRAIN_COLUMNS].to_dict(orient="records"))
-    latest_close = float(recent_rows["Close"].iloc[-1])
-    delta = prediction - latest_close
+    default_prediction, default_window, _ = predict_next_close_from_date(recent_rows["Date"].iloc[-1])
+    min_prediction_date = df.iloc[TIME_STEPS - 1]["Date"].strftime("%Y-%m-%d")
+    max_prediction_date = df.iloc[-1]["Date"].strftime("%Y-%m-%d")
 
     return {
         "company_name": "General Electric (GE)",
@@ -57,12 +103,16 @@ def build_dashboard_context():
         "metrics": results["metrics"],
         "dashboard_path": dashboard_path,
         "prediction_plot_path": prediction_path,
-        "latest_close": latest_close,
-        "predicted_close": prediction,
-        "predicted_delta": delta,
-        "predicted_direction": "Up" if delta >= 0 else "Down",
+        "latest_close": default_prediction["latest_close"],
+        "predicted_close": default_prediction["predicted_close"],
+        "predicted_delta": default_prediction["delta"],
+        "predicted_direction": "Up" if default_prediction["delta"] >= 0 else "Down",
         "recent_rows": recent_rows.tail(8).assign(Date=recent_rows.tail(8)["Date"].dt.strftime("%Y-%m-%d")).to_dict(orient="records"),
-        "default_form_rows": recent_rows.assign(Date=recent_rows["Date"].dt.strftime("%Y-%m-%d")).to_dict(orient="records"),
+        "selected_prediction_date": default_prediction["selected_date"],
+        "min_prediction_date": min_prediction_date,
+        "max_prediction_date": max_prediction_date,
+        "prediction_result": default_prediction,
+        "prediction_window_preview": default_window.tail(8).assign(Date=default_window.tail(8)["Date"].dt.strftime("%Y-%m-%d")).to_dict(orient="records"),
         "chart_points": df.tail(30).assign(Date=df.tail(30)["Date"].dt.strftime("%Y-%m-%d"))[["Date", "Close"]].to_dict(orient="records"),
     }
 

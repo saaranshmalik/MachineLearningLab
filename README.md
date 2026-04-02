@@ -119,7 +119,7 @@ Generated images are saved under `outputs/matplotlib_graphs/`, and model artifac
 ## Frontend Features
 
 - dashboard cards for latest close, predicted next close, and direction
-- interactive prediction form that accepts `60` rows of `Open,High,Low,Close,Volume`
+- date-based prediction form that automatically uses the previous `60` trading rows
 - recent dataset preview table
 - embedded generated plots from the matplotlib workflow
 - automatic training and artifact generation if model files do not exist
