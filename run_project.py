@@ -1,11 +1,11 @@
 """
 Default entrypoint for the stock prediction project.
 
-Runs the terminal graph workflow so the project has a single obvious command.
+Runs the Flask frontend so the project has a single obvious command.
 """
 
-from live_terminal_graphs import main
+from app import app
 
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)

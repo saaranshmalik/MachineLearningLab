@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stock Predictor Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <main class="page-shell">
+        <section class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">Stock Forecast Dashboard</p>
+                <h1>Basic stock predictor for {{ company_name }}</h1>
+                <p class="hero-text">
+                    This frontend wraps your existing regression pipeline and predicts the next closing
+                    price from the previous {{ time_steps }} trading rows of OHLCV data.
+                </p>
+                <div class="hero-stats">
+                    <article class="stat-card">
+                        <span class="stat-label">Latest close</span>
+                        <strong>${{ '%.2f'|format(latest_close) }}</strong>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-label">Model next-close estimate</span>
+                        <strong>${{ '%.2f'|format(predicted_close) }}</strong>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-label">Direction</span>
+                        <strong class="{{ 'positive' if predicted_delta >= 0 else 'negative' }}">
+                            {{ predicted_direction }} {{ '%.2f'|format(predicted_delta) }}
+                        </strong>
+                    </article>
+                </div>
+            </div>
+
+            <div class="hero-panel">
+                <h2>Quick prediction</h2>
+                <form method="post" class="predict-form">
+                    <label for="history_rows">
+                        Paste {{ time_steps }} lines in this format:
+                        <code>Open,High,Low,Close,Volume</code>
+                    </label>
+                    <textarea id="history_rows" name="history_rows" spellcheck="false">{{ form_text }}</textarea>
+                    <button type="submit">Predict Next Close</button>
+                </form>
+                {% if error_message %}
+                <p class="message error">{{ error_message }}</p>
+                {% endif %}
+                {% if prediction_result %}
+                <div class="message success">
+                    <p>Predicted next close: <strong>${{ '%.2f'|format(prediction_result.predicted_close) }}</strong></p>
+                    <p>
+                        Signal:
+                        <strong class="{{ 'positive' if prediction_result.delta >= 0 else 'negative' }}">
+                            {{ prediction_result.direction }}
+                        </strong>
+                        ({{ '%+.2f'|format(prediction_result.delta) }} vs latest close)
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="content-grid">
+            <article class="panel">
+                <div class="panel-heading">
+                    <h2>Model quality</h2>
+                    <p>Training and test metrics from the bundled GE dataset.</p>
+                </div>
+                <div class="metric-grid">
+                    <div class="metric">
+                        <span>Train R²</span>
+                        <strong>{{ '%.2f'|format(metrics.train_r2 * 100) }}%</strong>
+                    </div>
+                    <div class="metric">
+                        <span>Test R²</span>
+                        <strong>{{ '%.2f'|format(metrics.test_r2 * 100) }}%</strong>
+                    </div>
+                    <div class="metric">
+                        <span>Train RMSE</span>
+                        <strong>{{ '%.4f'|format(metrics.train_rmse) }}</strong>
+                    </div>
+                    <div class="metric">
+                        <span>Test RMSE</span>
+                        <strong>{{ '%.4f'|format(metrics.test_rmse) }}</strong>
+                    </div>
+                    <div class="metric">
+                        <span>Train MAE</span>
+                        <strong>{{ '%.4f'|format(metrics.train_mae) }}</strong>
+                    </div>
+                    <div class="metric">
+                        <span>Test MAE</span>
+                        <strong>{{ '%.4f'|format(metrics.test_mae) }}</strong>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <h2>Recent trading rows</h2>
+                    <p>Latest {{ recent_rows|length }} rows from the built-in dataset.</p>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Open</th>
+                                <th>High</th>
+                                <th>Low</th>
+                                <th>Close</th>
+                                <th>Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in recent_rows %}
+                            <tr>
+                                <td>{{ row.Date }}</td>
+                                <td>{{ row.Open }}</td>
+                                <td>{{ row.High }}</td>
+                                <td>{{ row.Low }}</td>
+                                <td>{{ row.Close }}</td>
+                                <td>{{ row.Volume }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+
+        <section class="charts-grid">
+            <article class="panel">
+                <div class="panel-heading">
+                    <h2>Prediction chart</h2>
+                    <p>Saved from the matplotlib workflow.</p>
+                </div>
+                <img
+                    src="{{ url_for('generated_file', filename='matplotlib_graphs/actual_vs_predicted.png') }}"
+                    alt="Actual vs predicted close prices"
+                >
+            </article>
+            <article class="panel">
+                <div class="panel-heading">
+                    <h2>Dashboard plot</h2>
+                    <p>Combined model diagnostics and error views.</p>
+                </div>
+                <img
+                    src="{{ url_for('generated_file', filename='matplotlib_graphs/model_dashboard.png') }}"
+                    alt="Model dashboard"
+                >
+            </article>
+        </section>
+    </main>
+</body>
+</html>

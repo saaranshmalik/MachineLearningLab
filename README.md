@@ -1,10 +1,10 @@
 # Stock Price Prediction
 
-Predict the next-day closing price of a stock using historical OHLCV data, sliding-window feature engineering, and a lightweight scikit-learn pipeline.
+Predict the next-day closing price of a stock using historical OHLCV data, sliding-window feature engineering, a lightweight scikit-learn pipeline, and a browser-based frontend.
 
 ## Description
 
-This project is an end-to-end stock price prediction system built for coursework and viva presentation. It uses historical General Electric stock data and demonstrates the complete workflow:
+This project is an end-to-end stock price prediction system built for coursework. It uses historical General Electric stock data and demonstrates the complete workflow:
 
 - loading and preprocessing time-series data
 - creating 60-day rolling input windows
@@ -12,6 +12,7 @@ This project is an end-to-end stock price prediction system built for coursework
 - evaluating predictions with regression metrics
 - generating saved matplotlib visualizations
 
+The current repository is intentionally focused on the runnable implementation only.
 
 ## Project Highlights
 
@@ -20,6 +21,7 @@ This project is an end-to-end stock price prediction system built for coursework
 - `MinMaxScaler` normalization for stable preprocessing
 - 60-day lookback window with 5 market features
 - Saved model and scaler artifacts for reuse
+- Flask frontend for interactive predictions
 - Terminal and image-based result reporting
 
 ## Dataset
@@ -51,7 +53,11 @@ Model configuration:
 - `stock_pred_simple.py`: main training script
 - `show_accuracy.py`: terminal accuracy report
 - `live_terminal_graphs.py`: matplotlib plots saved to `outputs/matplotlib_graphs/`
-- `run_project.py`: simple default entrypoint
+- `prediction_service.py`: reusable helpers for predictions and dashboard data
+- `app.py`: Flask frontend entrypoint
+- `run_project.py`: simple default entrypoint for the web app
+- `templates/`: HTML template files
+- `static/`: frontend styling assets
 - `inputs/`: input dataset files
 - `outputs/`: generated plots and saved model artifacts
 
@@ -64,6 +70,7 @@ Requirements:
 - `pandas`
 - `scikit-learn`
 - `matplotlib`
+- `Flask`
 
 Install dependencies:
 
@@ -80,6 +87,14 @@ Run the main project flow:
 ```powershell
 python run_project.py
 ```
+
+Or launch the frontend directly:
+
+```powershell
+python app.py
+```
+
+Then open `http://127.0.0.1:5000/` in your browser.
 
 Train and save artifacts:
 
@@ -100,6 +115,14 @@ python live_terminal_graphs.py
 ```
 
 Generated images are saved under `outputs/matplotlib_graphs/`, and model artifacts are saved under `outputs/model_artifacts/`.
+
+## Frontend Features
+
+- dashboard cards for latest close, predicted next close, and direction
+- interactive prediction form that accepts `60` rows of `Open,High,Low,Close,Volume`
+- recent dataset preview table
+- embedded generated plots from the matplotlib workflow
+- automatic training and artifact generation if model files do not exist
 
 ## Limitations
 
